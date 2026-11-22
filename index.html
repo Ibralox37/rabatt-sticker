@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#d50000">
+<meta name="robots" content="noindex">
+<title>Rabatt-Sticker – Idee von Ibo</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8F%B7%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<style>
+:root{--rot:#d50000;--rothell:#ffebee;--gruen:#2e7d32;--grau:#666}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:#f5f5f5;color:#222;padding-bottom:80px}
+header{background:var(--rot);color:#fff;padding:14px 16px 12px}
+header h1{margin:0;font-size:22px}
+header p{margin:2px 0 0;font-size:13px;opacity:.9}
+main{max-width:560px;margin:0 auto;padding:14px}
+.seite{display:none}.seite.aktiv{display:block}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:#fff;border-top:1px solid #ddd;padding-bottom:env(safe-area-inset-bottom);z-index:5}
+nav button{flex:1;border:0;background:none;padding:8px 4px 10px;font-size:13px;color:var(--grau);font-weight:600;font-family:inherit}
+nav button span{display:block;font-size:22px;line-height:1.2}
+nav button.aktiv{color:var(--rot)}
+.karte{background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+h2{font-size:18px;margin:0 0 8px}
+p{margin:6px 0}
+.klein{font-size:13px;color:var(--grau)}
+.knopf{display:block;width:100%;border:0;border-radius:10px;padding:14px;font-size:17px;font-weight:700;background:var(--rot);color:#fff;font-family:inherit;cursor:pointer}
+.knopf.hell{background:#e8e8e8;color:#222}
+.knopf:active{transform:scale(.98)}
+.knopf+.knopf{margin-top:8px}
+
+/* Sticker – echte Größe 4 x 2,5 cm */
+.sticker{width:40mm;height:25mm;border:.7mm solid var(--rot);border-radius:1.5mm;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:1.3mm 1mm 1mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.sticker .preis{color:var(--rot);font-weight:900;font-size:8.5mm;line-height:1;letter-spacing:-.2mm}
+.sticker svg{width:27mm;height:11mm;display:block}
+.vorschau{display:grid;grid-template-columns:repeat(2,40mm);gap:10px;justify-content:center;margin:10px 0}
+
+.reihe{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee}
+.reihe:last-child{border-bottom:0}
+.reihe b{color:var(--rot);font-size:18px}
+.stepper{display:flex;align-items:center;gap:10px}
+.stepper button{width:38px;height:38px;border-radius:50%;border:2px solid var(--rot);background:#fff;color:var(--rot);font-size:20px;font-weight:700;font-family:inherit}
+.stepper output{min-width:28px;text-align:center;font-weight:700;font-size:17px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+td,th{padding:5px 4px;border-bottom:1px solid #eee;text-align:left}
+code{font-family:ui-monospace,Consolas,monospace;font-size:14px}
+
+/* Kamera */
+.kamera{position:relative;background:#111;border-radius:12px;overflow:hidden;aspect-ratio:4/3;margin-bottom:10px}
+.kamera video{width:100%;height:100%;object-fit:cover;display:block}
+.kamera .ziel{position:absolute;left:12%;right:12%;top:32%;bottom:32%;border:3px solid rgba(255,255,255,.85);border-radius:10px;pointer-events:none}
+.kamera .hinweis{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;text-align:center;padding:20px;font-size:15px}
+.kamera.blitz::after{content:"";position:absolute;inset:0;background:rgba(46,125,50,.45)}
+.kamera.fehler::after{content:"";position:absolute;inset:0;background:rgba(213,0,0,.45)}
+.handeingabe{display:flex;gap:8px;margin-top:8px}
+.handeingabe input{flex:1;min-width:0;padding:10px;border:1px solid #ccc;border-radius:8px;font-size:16px;font-family:inherit}
+.handeingabe button{border:0;border-radius:8px;background:#444;color:#fff;padding:0 14px;font-weight:700;font-family:inherit}
+
+/* Kassenbon */
+.bon{font-family:ui-monospace,Consolas,monospace;font-size:15px;background:#fffdf5;border:1px dashed #bbb;border-radius:6px;padding:10px;min-height:80px;max-height:240px;overflow:auto}
+.bon .zeile{display:flex;justify-content:space-between;padding:2px 0}
+.bon .leer{color:#999;text-align:center;padding:20px 0}
+.summe{display:flex;justify-content:space-between;align-items:baseline;margin:10px 2px;font-size:20px;font-weight:800}
+.summe span:last-child{color:var(--rot);font-size:28px}
+.meldung{min-height:22px;font-weight:600;text-align:center;margin:4px 0}
+.meldung.gut{color:var(--gruen)}.meldung.schlecht{color:var(--rot)}
+
+/* Wettrennen */
+.uhr{font-size:44px;font-weight:900;text-align:center;font-variant-numeric:tabular-nums;margin:4px 0}
+.fortschritt{text-align:center;font-weight:700;color:var(--grau)}
+.produkt{display:flex;justify-content:center;margin:10px 0}
+.display{background:#1b2a1b;color:#7CFC7C;font-family:ui-monospace,Consolas,monospace;font-size:22px;padding:10px 12px;border-radius:8px;text-align:right;min-height:50px}
+.tasten{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.tasten button{padding:16px 0;font-size:22px;font-weight:700;border:0;border-radius:10px;background:#e8e8e8;font-family:inherit}
+.tasten button:active{background:#d0d0d0}
+.tasten .breit{grid-column:span 3;background:#1565c0;color:#fff;font-size:17px}
+.tasten .ok{background:var(--gruen);color:#fff}
+.wackeln{animation:wackeln .3s}
+@keyframes wackeln{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.ergebnis td:last-child{text-align:right;font-weight:800}
+.gross{font-size:22px;font-weight:800;text-align:center;margin:10px 0;color:var(--gruen)}
+
+#druck{display:none}
+@page{size:A4;margin:8mm}
+@media print{
+  body{background:#fff;padding:0}
+  header,main,nav{display:none!important}
+  #druck{display:grid!important;grid-template-columns:repeat(4,40mm);gap:4mm 6mm;justify-content:center}
+  #druck .sticker{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>🏷️ Rabatt-Sticker</h1>
+  <p>Idee von Ibo · Vorführ-App</p>
+</header>
+
+<main>
+  <!-- ========== STICKER ========== -->
+  <section class="seite aktiv" id="seiteSticker">
+    <div class="karte">
+      <h2>Die 4 Sticker</h2>
+      <p class="klein">Echte Größe: 4 × 2,5 cm. Jeder Preis hat einen eigenen Strichcode.</p>
+      <div class="vorschau" id="vorschau"></div>
+    </div>
+
+    <div class="karte">
+      <h2>Ausdrucken</h2>
+      <p class="klein">Wie viele Sticker von jedem Preis? Auf eine Seite passen 36.</p>
+      <div id="mengen"></div>
+      <p class="klein" id="seitenInfo"></p>
+      <button class="knopf" id="drucken">🖨️ Drucken</button>
+      <p class="klein">Beim Drucken <b>„Tatsächliche Größe“</b> oder <b>Skalierung 100 %</b> wählen, sonst stimmt die Größe nicht.</p>
+    </div>
+
+    <div class="karte">
+      <h2>So funktioniert's</h2>
+      <p>Ein Strichcode ist eine <b>Zahl</b>, die als Striche gemalt ist. Die Kasse liest die Zahl und schaut in ihrer Liste nach, welcher Preis dazugehört.</p>
+      <table>
+        <tr><th>Sticker</th><th>Zahl im Strichcode</th></tr>
+        <tbody id="codeTabelle"></tbody>
+      </table>
+      <p class="klein">Die Zahlen fangen mit <b>2</b> an. Solche Zahlen sind für Läden reserviert, die eigene Codes machen. Auf echten Produkten gibt es sie nicht. Die letzte Ziffer ist eine Prüfziffer, damit der Scanner merkt, wenn er sich verlesen hat.</p>
+      <p class="klein">Die Striche sind <b>schwarz</b>, nicht rot: Viele Kassen-Scanner leuchten mit rotem Licht. Rote Striche wären für sie unsichtbar.</p>
+      <p class="klein">Damit es an einer echten Kasse klappt, muss der Laden diese 4 Zahlen einmal in sein Kassen-Programm eintragen.</p>
+    </div>
+  </section>
+
+  <!-- ========== KASSE ========== -->
+  <section class="seite" id="seiteKasse">
+    <div class="karte">
+      <h2>Test-Kasse</h2>
+      <div class="kamera" id="kKamera">
+        <video id="kVideo" playsinline muted></video>
+        <div class="ziel"></div>
+        <div class="hinweis" id="kHinweis">Tippe auf „Kamera starten“ und halte einen Sticker in den Rahmen.</div>
+      </div>
+      <button class="knopf" id="kStart">📷 Kamera starten</button>
+      <form class="handeingabe" id="kForm">
+        <input id="kEingabe" inputmode="numeric" autocomplete="off" placeholder="Code eintippen oder Hand-Scanner">
+        <button>OK</button>
+      </form>
+      <div class="meldung" id="kMeldung"></div>
+    </div>
+    <div class="karte">
+      <h2>Kassenbon</h2>
+      <div class="bon" id="kBon"></div>
+      <div class="summe"><span id="kAnzahl">0 Artikel</span><span id="kSumme">0,00 €</span></div>
+      <button class="knopf hell" id="kNeu">🧾 Neuer Kunde</button>
+    </div>
+  </section>
+
+  <!-- ========== WETTRENNEN ========== -->
+  <section class="seite" id="seiteRennen">
+    <div class="karte" id="wStart">
+      <h2>⏱️ Wettrennen</h2>
+      <p><b>Runde 1 – Eintippen:</b> So wie heute. Für jedes der 10 Produkte drückst du „Preis ändern“, tippst den Preis ein und drückst OK.</p>
+      <p><b>Runde 2 – Scannen:</b> Deine Idee. Du scannst 10 Sticker mit der Kamera.</p>
+      <p class="klein">Für Runde 2 brauchst du ausgedruckte Sticker (oder die Sticker auf einem zweiten Bildschirm). Du darfst denselben Sticker mehrmals scannen.</p>
+      <button class="knopf" id="wLosTippen">▶ Runde 1 starten</button>
+      <p class="klein" id="wBest"></p>
+    </div>
+
+    <div class="karte" id="wTippen" hidden>
+      <div class="fortschritt" id="wtFort"></div>
+      <div class="uhr" id="wtUhr">0,0 s</div>
+      <div class="produkt" id="wtProdukt"></div>
+      <div class="display" id="wtDisplay"></div>
+      <div class="tasten" id="wtTasten"></div>
+    </div>
+
+    <div class="karte" id="wZwischen" hidden>
+      <h2>Runde 1 geschafft! ✅</h2>
+      <div class="gross" id="wzZeit"></div>
+      <p>Jetzt Runde 2: Halte deine Sticker bereit. Die Uhr startet, sobald die Kamera läuft.</p>
+      <button class="knopf" id="wLosScannen">▶ Runde 2 starten</button>
+    </div>
+
+    <div class="karte" id="wScannen" hidden>
+      <div class="fortschritt" id="wsFort"></div>
+      <div class="uhr" id="wsUhr">0,0 s</div>
+      <div class="kamera" id="wsKamera">
+        <video id="wsVideo" playsinline muted></video>
+        <div class="ziel"></div>
+        <div class="hinweis" id="wsHinweis">Kamera startet …</div>
+      </div>
+      <form class="handeingabe" id="wsForm">
+        <input id="wsEingabe" inputmode="numeric" autocomplete="off" placeholder="Code eintippen oder Hand-Scanner">
+        <button>OK</button>
+      </form>
+      <div class="meldung" id="wsMeldung"></div>
+      <button class="knopf hell" id="wsAbbruch">Abbrechen</button>
+    </div>
+
+    <div class="karte ergebnis" id="wErgebnis" hidden>
+      <h2>🏁 Ergebnis</h2>
+      <table>
+        <tr><td>Eintippen (10 Produkte)</td><td id="weTippen"></td></tr>
+        <tr><td>Scannen (10 Produkte)</td><td id="weScannen"></td></tr>
+      </table>
+      <div class="gross" id="weFazit"></div>
+      <p id="weHochrechnung"></p>
+      <p class="klein">Das ist eine Nachstellung. Wie viele Tasten eine echte Kassiererin drücken muss, wissen wir nicht genau.</p>
+      <button class="knopf" id="wNochmal">🔁 Nochmal</button>
+    </div>
+  </section>
+</main>
+
+<nav>
+  <button class="aktiv" data-seite="seiteSticker"><span>🏷️</span>Sticker</button>
+  <button data-seite="seiteKasse"><span>🛒</span>Kasse</button>
+  <button data-seite="seiteRennen"><span>⏱️</span>Wettrennen</button>
+</nav>
+
+<div id="druck"></div>
+
+<script src="zxing.min.js"></script>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+
+/* ---------- Preise und Codes ---------- */
+const PREISE = [20, 50, 100, 200]; // in Cent
+// EAN-8 Prüfziffer: Ziffern abwechselnd mal 3 und mal 1, dann auf die nächste 10 auffüllen
+function pruefziffer(s) {
+  let summe = 0;
+  for (let i = 0; i < s.length; i++) summe += (i % 2 === 0 ? 3 : 1) * Number(s[i]);
+  return (10 - summe % 10) % 10;
+}
+const STICKER = PREISE.map(cent => {
+  const zahl = '2' + String(cent).padStart(6, '0'); // 2 = Laden-eigener Code, danach der Preis in Cent
+  return { cent, code: zahl + pruefziffer(zahl) };
+});
+const NACH_CODE = Object.fromEntries(STICKER.map(s => [s.code, s]));
+const euro = cent => (cent / 100).toFixed(2).replace('.', ',') + ' €';
+const sek = ms => (ms / 1000).toFixed(1).replace('.', ',') + ' s';
+
+/* ---------- Strichcode (EAN-8) als Bild ---------- */
+const L = ['0001101','0011001','0010011','0111101','0100011','0110001','0101111','0111011','0110111','0001011'];
+const R = L.map(m => m.replace(/./g, b => b === '0' ? '1' : '0'));
+function ean8Muster(code) {
+  let m = '101';
+  for (let i = 0; i < 4; i++) m += L[Number(code[i])];
+  m += '01010';
+  for (let i = 4; i < 8; i++) m += R[Number(code[i])];
+  return m + '101';
+}
+function strichcodeSVG(code) {
+  const m = ean8Muster(code), RAND = 7, BREITE = m.length + 2 * RAND;
+  const schutz = i => i < 3 || (i >= 31 && i < 36) || i >= 64; // längere Randstriche
+  let striche = '';
+  for (let i = 0; i < m.length;) {
+    if (m[i] !== '1') { i++; continue; }
+    let j = i;
+    while (j < m.length && m[j] === '1' && schutz(j) === schutz(i)) j++;
+    striche += `<rect x="${i + RAND}" y="0" width="${j - i}" height="${schutz(i) ? 28 : 24}"/>`;
+    i = j;
+  }
+  const text = (s, x) => `<text x="${x}" y="32.5" font-size="7.5" text-anchor="middle" font-family="Arial,Helvetica,sans-serif">${s}</text>`;
+  return `<svg viewBox="0 0 ${BREITE} 33" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" fill="#000">${striche}${text(code.slice(0, 4), RAND + 17)}${text(code.slice(4), RAND + 50)}</svg>`;
+}
+const stickerHTML = s => `<div class="sticker"><div class="preis">${euro(s.cent)}</div>${strichcodeSVG(s.code)}</div>`;
+
+/* ---------- Speicher ---------- */
+const SPEICHER = 'rabattSticker';
+let daten = { mengen: [9, 9, 9, 9], bestTippen: null, bestScannen: null };
+try { Object.assign(daten, JSON.parse(localStorage.getItem(SPEICHER)) || {}); } catch (e) {}
+const speichern = () => { try { localStorage.setItem(SPEICHER, JSON.stringify(daten)); } catch (e) {} };
+
+/* ---------- Seite: Sticker ---------- */
+$('vorschau').innerHTML = STICKER.map(stickerHTML).join('');
+$('codeTabelle').innerHTML = STICKER.map(s => `<tr><td><b style="color:var(--rot)">${euro(s.cent)}</b></td><td><code>${s.code}</code></td></tr>`).join('');
+function mengenZeigen() {
+  $('mengen').innerHTML = STICKER.map((s, i) => `
+    <div class="reihe"><b>${euro(s.cent)}</b>
+      <div class="stepper"><button data-i="${i}" data-d="-1">−</button><output>${daten.mengen[i]}</output><button data-i="${i}" data-d="1">+</button></div>
+    </div>`).join('');
+  const gesamt = daten.mengen.reduce((a, b) => a + b, 0);
+  $('seitenInfo').textContent = `Zusammen ${gesamt} Sticker = ${Math.max(1, Math.ceil(gesamt / 36))} Seite(n).`;
+}
+$('mengen').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const i = Number(b.dataset.i);
+  daten.mengen[i] = Math.max(0, Math.min(99, daten.mengen[i] + Number(b.dataset.d)));
+  speichern(); mengenZeigen();
+});
+mengenZeigen();
+$('drucken').addEventListener('click', () => {
+  let html = '';
+  STICKER.forEach((s, i) => { for (let n = 0; n < daten.mengen[i]; n++) html += stickerHTML(s); });
+  if (!html) { alert('Wähle mindestens einen Sticker aus.'); return; }
+  $('druck').innerHTML = html;
+  window.print();
+});
+
+/* ---------- Töne ---------- */
+let audio;
+function ton(freq, dauer) {
+  try {
+    audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+    if (audio.state === 'suspended') audio.resume();
+    const o = audio.createOscillator(), g = audio.createGain();
+    o.type = 'square'; o.frequency.value = freq; g.gain.value = 0.07;
+    o.connect(g); g.connect(audio.destination);
+    o.start(); o.stop(audio.currentTime + dauer);
+  } catch (e) {}
+}
+const piep = () => { ton(1800, 0.09); if (navigator.vibrate) navigator.vibrate(40); };
+const fehlerTon = () => ton(220, 0.25);
+function aufleuchten(el, klasse) { el.classList.remove('blitz', 'fehler'); void el.offsetWidth; el.classList.add(klasse); setTimeout(() => el.classList.remove(klasse), 250); }
+
+/* ---------- Scanner (Kamera) ---------- */
+let scanner = null;
+async function scannerStart(video, beiCode) {
+  scannerStop();
+  const s = { aktiv: true, video };
+  scanner = s;
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('keineKamera');
+  let detektor = null;
+  if ('BarcodeDetector' in window) {
+    try {
+      const formate = await BarcodeDetector.getSupportedFormats();
+      if (formate.includes('ean_8')) detektor = new BarcodeDetector({ formats: ['ean_8', 'ean_13'] });
+    } catch (e) {}
+  }
+  if (detektor) {
+    s.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false });
+    if (!s.aktiv) { s.stream.getTracks().forEach(t => t.stop()); return; }
+    video.srcObject = s.stream;
+    await video.play();
+    const schleife = async () => {
+      if (!s.aktiv) return;
+      try { if (video.readyState >= 2) { const r = await detektor.detect(video); if (r.length && s.aktiv) beiCode(r[0].rawValue); } } catch (e) {}
+      s.timer = setTimeout(schleife, 120);
+    };
+    schleife();
+  } else {
+    if (!window.ZXing) throw new Error('keinLeser');
+    const hints = new Map();
+    hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [ZXing.BarcodeFormat.EAN_8, ZXing.BarcodeFormat.EAN_13]);
+    hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+    s.reader = new ZXing.BrowserMultiFormatReader(hints, 120);
+    await s.reader.decodeFromConstraints({ video: { facingMode: { ideal: 'environment' } } }, video, res => {
+      if (res && s.aktiv) beiCode(res.getText());
+    });
+    if (!s.aktiv) { try { s.reader.reset(); } catch (e) {} }
+  }
+}
+function scannerStop() {
+  const s = scanner; if (!s) return;
+  s.aktiv = false; clearTimeout(s.timer);
+  if (s.stream) s.stream.getTracks().forEach(t => t.stop());
+  if (s.reader) { try { s.reader.reset(); } catch (e) {} }
+  try { s.video.pause(); s.video.srcObject = null; } catch (e) {}
+  scanner = null;
+}
+function kameraFehlerText(e) {
+  const n = (e && e.name) || '';
+  if (n === 'NotAllowedError') return 'Kamera nicht erlaubt. Erlaube die Kamera in den Browser-Einstellungen.';
+  if (n === 'NotFoundError') return 'Keine Kamera gefunden. Du kannst den Code unten eintippen.';
+  if (!window.isSecureContext) return 'Die Kamera geht nur, wenn die App über eine https-Adresse läuft. Du kannst den Code unten eintippen.';
+  return 'Kamera geht gerade nicht. Du kannst den Code unten eintippen.';
+}
+// Gleichen Code nicht doppelt zählen, solange er noch vor der Kamera ist
+function entprellt(fn, ms = 1300) {
+  let letzter = '', zeit = 0;
+  return code => { const t = Date.now(); if (code === letzter && t - zeit < ms) return; letzter = code; zeit = t; fn(code); };
+}
+
+/* ---------- Seite: Kasse ---------- */
+let bon = [];
+function bonZeigen() {
+  $('kBon').innerHTML = bon.length
+    ? bon.map((c, i) => `<div class="zeile"><span>${i + 1}. Rabatt-Artikel</span><span>${euro(c)}</span></div>`).join('')
+    : '<div class="leer">Noch nichts gescannt</div>';
+  $('kBon').scrollTop = $('kBon').scrollHeight;
+  $('kAnzahl').textContent = bon.length + (bon.length === 1 ? ' Artikel' : ' Artikel');
+  $('kSumme').textContent = euro(bon.reduce((a, b) => a + b, 0));
+}
+function kasseMeldung(text, gut) { const m = $('kMeldung'); m.textContent = text; m.className = 'meldung ' + (gut ? 'gut' : 'schlecht'); }
+function kasseCode(code) {
+  code = String(code).trim();
+  const s = NACH_CODE[code];
+  if (s) { bon.push(s.cent); piep(); aufleuchten($('kKamera'), 'blitz'); kasseMeldung('✔ ' + euro(s.cent) + ' – Rabatt-Sticker erkannt', true); bonZeigen(); }
+  else { fehlerTon(); aufleuchten($('kKamera'), 'fehler'); kasseMeldung('✖ Unbekannter Code ' + code + ' – das ist kein Rabatt-Sticker', false); }
+}
+const kasseScan = entprellt(kasseCode);
+let kasseLaeuft = false;
+$('kStart').addEventListener('click', async () => {
+  if (kasseLaeuft) { scannerStop(); kasseLaeuft = false; $('kStart').textContent = '📷 Kamera starten'; $('kHinweis').hidden = false; return; }
+  ton(1, 0.01); // Ton freischalten (iPhone)
+  $('kHinweis').textContent = 'Kamera startet …'; $('kHinweis').hidden = false;
+  try {
+    await scannerStart($('kVideo'), kasseScan);
+    kasseLaeuft = true; $('kHinweis').hidden = true; $('kStart').textContent = '⏹ Kamera aus';
+  } catch (e) { scannerStop(); $('kHinweis').textContent = kameraFehlerText(e); }
+});
+$('kForm').addEventListener('submit', e => { e.preventDefault(); const v = $('kEingabe').value.trim(); if (v) kasseCode(v); $('kEingabe').value = ''; });
+$('kNeu').addEventListener('click', () => { bon = []; bonZeigen(); kasseMeldung('', true); });
+bonZeigen();
+
+/* ---------- Seite: Wettrennen ---------- */
+const N = 10;
+let rennen = null, uhrTimer = null;
+function karteZeigen(id) { ['wStart', 'wTippen', 'wZwischen', 'wScannen', 'wErgebnis'].forEach(k => $(k).hidden = k !== id); }
+function uhrStart(el) { const start = Date.now(); clearInterval(uhrTimer); uhrTimer = setInterval(() => el.textContent = sek(Date.now() - start), 100); return start; }
+function bestZeigen() {
+  $('wBest').textContent = (daten.bestTippen && daten.bestScannen)
+    ? `Deine Bestzeiten: Eintippen ${sek(daten.bestTippen)} · Scannen ${sek(daten.bestScannen)}` : '';
+}
+bestZeigen();
+
+// Runde 1: Eintippen
+$('wtTasten').innerHTML = '<button class="breit" data-t="P">PREIS ÄNDERN</button>'
+  + ['1','2','3','4','5','6','7','8','9','⌫','0','OK'].map(t => `<button data-t="${t}" class="${t === 'OK' ? 'ok' : ''}">${t}</button>`).join('');
+function tippenZeigen() {
+  const r = rennen;
+  $('wtFort').textContent = `Produkt ${r.i + 1} von ${N}`;
+  $('wtProdukt').innerHTML = stickerHTML(STICKER.find(s => s.cent === r.produkte[r.i]));
+  $('wtDisplay').textContent = r.preisModus ? 'Neuer Preis: ' + euro(Number(r.eingabe || 0)) : 'Artikel gescannt – Preis ändern?';
+}
+$('wLosTippen').addEventListener('click', () => {
+  ton(1, 0.01);
+  rennen = { produkte: Array.from({ length: N }, () => PREISE[Math.floor(Math.random() * PREISE.length)]), i: 0, eingabe: '', preisModus: false };
+  karteZeigen('wTippen');
+  rennen.start = uhrStart($('wtUhr'));
+  tippenZeigen();
+});
+$('wtTasten').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b || !rennen) return;
+  const t = b.dataset.t, r = rennen;
+  if (t === 'P') { r.preisModus = true; r.eingabe = ''; }
+  else if (t === '⌫') r.eingabe = r.eingabe.slice(0, -1);
+  else if (t === 'OK') {
+    if (r.preisModus && Number(r.eingabe) === r.produkte[r.i]) {
+      piep(); r.i++; r.eingabe = ''; r.preisModus = false;
+      if (r.i >= N) { clearInterval(uhrTimer); r.tippZeit = Date.now() - r.start; $('wzZeit').textContent = sek(r.tippZeit); karteZeigen('wZwischen'); return; }
+    } else {
+      fehlerTon(); $('wtDisplay').classList.remove('wackeln'); void $('wtDisplay').offsetWidth; $('wtDisplay').classList.add('wackeln');
+      r.eingabe = '';
+    }
+  }
+  else if (r.preisModus && r.eingabe.length < 4) r.eingabe += t;
+  tippenZeigen();
+});
+
+// Runde 2: Scannen
+function scanZaehlen(code) {
+  const r = rennen; if (!r || r.fertig) return;
+  if (!r.scanStart) r.scanStart = uhrStart($('wsUhr')); // falls die Kamera hängt: Uhr startet beim ersten Code
+  code = String(code).trim();
+  const m = $('wsMeldung');
+  if (!NACH_CODE[code]) { fehlerTon(); aufleuchten($('wsKamera'), 'fehler'); m.textContent = '✖ Kein Rabatt-Sticker'; m.className = 'meldung schlecht'; return; }
+  piep(); aufleuchten($('wsKamera'), 'blitz');
+  r.gescannt++;
+  m.textContent = '✔ ' + euro(NACH_CODE[code].cent); m.className = 'meldung gut';
+  $('wsFort').textContent = `${r.gescannt} von ${N} gescannt`;
+  if (r.gescannt >= N) {
+    r.fertig = true; clearInterval(uhrTimer); scannerStop();
+    r.scanZeit = Date.now() - r.scanStart;
+    ergebnisZeigen();
+  }
+}
+const scanEntprellt = entprellt(scanZaehlen, 900);
+$('wLosScannen').addEventListener('click', async () => {
+  const r = rennen; r.gescannt = 0; r.fertig = false; r.scanStart = null;
+  karteZeigen('wScannen');
+  $('wsFort').textContent = `0 von ${N} gescannt`; $('wsUhr').textContent = '0,0 s'; $('wsMeldung').textContent = '';
+  $('wsHinweis').textContent = 'Kamera startet …'; $('wsHinweis').hidden = false;
+  try {
+    await scannerStart($('wsVideo'), scanEntprellt);
+    $('wsHinweis').hidden = true;
+  } catch (e) {
+    scannerStop();
+    $('wsHinweis').textContent = kameraFehlerText(e);
+  }
+  if (rennen === r && !r.fertig && !r.scanStart) r.scanStart = uhrStart($('wsUhr')); // Uhr läuft erst, wenn die Kamera bereit ist
+});
+$('wsForm').addEventListener('submit', e => { e.preventDefault(); const v = $('wsEingabe').value.trim(); if (v) scanZaehlen(v); $('wsEingabe').value = ''; });
+$('wsAbbruch').addEventListener('click', () => { scannerStop(); clearInterval(uhrTimer); rennen = null; karteZeigen('wStart'); });
+
+function ergebnisZeigen() {
+  const r = rennen;
+  $('weTippen').textContent = sek(r.tippZeit);
+  $('weScannen').textContent = sek(r.scanZeit);
+  const diff = r.tippZeit - r.scanZeit;
+  if (diff > 0) {
+    $('weFazit').textContent = `Scannen war ${sek(diff)} schneller! 🎉`;
+    const proStueck = diff / N;
+    $('weHochrechnung').textContent = `Das sind etwa ${sek(proStueck)} pro Produkt. Bei 50 Rabatt-Produkten wären das ungefähr ${Math.round(proStueck * 50 / 1000)} Sekunden weniger an der Kasse.`;
+  } else {
+    $('weFazit').textContent = 'Diesmal war Eintippen schneller.';
+    $('weHochrechnung').textContent = 'Probier es nochmal, vielleicht hat die Kamera etwas gebraucht. Mit einem echten Kassen-Scanner geht es meistens noch schneller als mit dem Handy.';
+  }
+  if (!daten.bestTippen || r.tippZeit < daten.bestTippen) daten.bestTippen = r.tippZeit;
+  if (!daten.bestScannen || r.scanZeit < daten.bestScannen) daten.bestScannen = r.scanZeit;
+  speichern(); bestZeigen();
+  karteZeigen('wErgebnis');
+}
+$('wNochmal').addEventListener('click', () => { rennen = null; karteZeigen('wStart'); });
+
+/* ---------- Navigation ---------- */
+document.querySelectorAll('nav button').forEach(b => b.addEventListener('click', () => {
+  scannerStop(); clearInterval(uhrTimer);
+  kasseLaeuft = false; $('kStart').textContent = '📷 Kamera starten'; $('kHinweis').hidden = false;
+  $('kHinweis').textContent = 'Tippe auf „Kamera starten“ und halte einen Sticker in den Rahmen.';
+  if (rennen && !rennen.fertig) { rennen = null; karteZeigen('wStart'); }
+  document.querySelectorAll('nav button').forEach(x => x.classList.toggle('aktiv', x === b));
+  document.querySelectorAll('.seite').forEach(s => s.classList.toggle('aktiv', s.id === b.dataset.seite));
+  window.scrollTo(0, 0);
+}));
+</script>
+</body>
+</html>
